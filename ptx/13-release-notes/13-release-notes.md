@@ -1,13 +1,13 @@
 # 13. Release Notes
 
 
-This section describes the history of change in the PTX ISA and implementation. The first section describes ISA and implementation changes in the current release of PTX ISA version 9.2, and the remaining sections provide a record of changes in previous releases of PTX ISA versions back to PTX ISA version 2.0.
+This section describes the history of change in the PTX ISA and implementation. The first section describes ISA and implementation changes in the current release of PTX ISA version 9.3, and the remaining sections provide a record of changes in previous releases of PTX ISA versions back to PTX ISA version 2.0.
 
 
-Table 59 shows the PTX release history.
+Table 62 shows the PTX release history.
 
 
-Table 59 PTX Release History PTX ISA Version | CUDA Release | Supported Targets  
+Table 62 PTX Release History PTX ISA Version | CUDA Release | Supported Targets  
 ---|---|---  
 PTX ISA 1.0 | CUDA 1.0 | `sm_{10,11}`  
 PTX ISA 1.1 | CUDA 1.1 | `sm_{10,11}`  
@@ -55,10 +55,11 @@ PTX ISA 8.7 | CUDA 12.8, driver r570 | `sm_{10,11,12,13}`, `sm_20`, `sm_{30,32,3
 PTX ISA 8.8 | CUDA 12.9, driver r575 | `sm_{10,11,12,13}`, `sm_20`, `sm_{30,32,35,37}`, `sm_{50,52,53}`, `sm_{60,61,62}`, `sm_{70,72,75}`, `sm_{80,86,87,89}`, `sm_{90,90a}`, `sm_{100,100f,100a,101,101f,101a,103,103f,103a}`, `sm_{120,120f,120a,121,121f,121a}`  
 PTX ISA 9.0 | CUDA 13.0, driver r580 | `sm_{10,11,12,13}`, `sm_20`, `sm_{30,32,35,37}`, `sm_{50,52,53}`, `sm_{60,61,62}`, `sm_{70,72,75}`, `sm_{80,86,87,88,89}`, `sm_{90,90a}`, `sm_{100,100f,100a,103,103f,103a}`, `sm_{110,110f,110a}`, `sm_{120,120f,120a,121,121f,121a}`  
 PTX ISA 9.1 | CUDA 13.1, driver r590 | `sm_{10,11,12,13}`, `sm_20`, `sm_{30,32,35,37}`, `sm_{50,52,53}`, `sm_{60,61,62}`, `sm_{70,72,75}`, `sm_{80,86,87,88,89}`, `sm_{90,90a}`, `sm_{100,100f,100a,103,103f,103a}`, `sm_{110,110f,110a}`, `sm_{120,120f,120a,121,121f,121a}`  
-PTX ISA 9.2 | CUDA 13.2, driver r595 | `sm_{10,11,12,13}`, `sm_20`, `sm_{30,32,35,37}`, `sm_{50,52,53}`, `sm_{60,61,62}`, `sm_{70,72,75}`, `sm_{80,86,87,88,89}`, `sm_{90,90a}`, `sm_{100,100f,100a,103,103f,103a}`, `sm_{110,110f,110a}`, `sm_{120,120f,120a,121,121f,121a}`
+PTX ISA 9.2 | CUDA 13.2, driver r595 | `sm_{10,11,12,13}`, `sm_20`, `sm_{30,32,35,37}`, `sm_{50,52,53}`, `sm_{60,61,62}`, `sm_{70,72,75}`, `sm_{80,86,87,88,89}`, `sm_{90,90a}`, `sm_{100,100f,100a,103,103f,103a}`, `sm_{110,110f,110a}`, `sm_{120,120f,120a,121,121f,121a}`  
+PTX ISA 9.3 | CUDA 13.3, driver r610 | `sm_{10,11,12,13}`, `sm_20`, `sm_{30,32,35,37}`, `sm_{50,52,53}`, `sm_{60,61,62}`, `sm_{70,72,75}`, `sm_{80,86,87,88,89}`, `sm_{90,90a}`, `sm_{100,100f,100a,103,103f,103a}`, `sm_{110,110f,110a}`, `sm_{120,120f,120a,121,121f,121a}`
 
 
-Table 60 shows the release history of arch-specific and family-specific PTX instructions. Apart from PTX instructions, other features and constructs that are architecture-specific and family-specific are described in following sections:
+Table 63 shows the release history of arch-specific and family-specific PTX instructions. Apart from PTX instructions, other features and constructs that are architecture-specific and family-specific are described in following sections:
 
 
   * Restriction on Tensor Copy instructions  
@@ -66,7 +67,7 @@ Table 60 shows the release history of arch-specific and family-specific PTX inst
   * TensorCore 5th Generation Matrix Shape Target ISA Notes
 
 
-Table 60 Arch-specific/ Family-specific PTX Features Release History Instruction | Variant | PTX ISA Version | Supported Targets  
+Table 63 Arch-specific/ Family-specific PTX Features Release History Instruction | Variant | PTX ISA Version | Supported Targets  
 ---|---|---|---  
 `tensormap.replace` | Base variant | 8.3 | `sm_90a`  
 8.6 | `sm_100a`, `sm_120a`  
