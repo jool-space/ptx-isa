@@ -73,7 +73,8 @@ jobs:
           tag=$(scripts/publish.sh dist | tail -1)
           if [[ "$tag" == v* ]]; then
             git push origin docs
-            git push origin "$tag"
+            # A rebuild moves the tag onto the new build, so this push rewrites it.
+            git push --force origin "$tag"
             echo "tag=$tag" >> "$GITHUB_OUTPUT"
             echo "Published \`$tag\`" >> "$GITHUB_STEP_SUMMARY"
           else
@@ -88,6 +89,8 @@ jobs:
           tag="${{ steps.publish.outputs.tag }}"
           version=$(jq -r .ptx_isa_version dist/VERSION.json)
           tar -czf "ptx-isa-${version}.tar.gz" -C dist .
+          # The release is pinned to a tag that may have just moved; replace it.
+          gh release delete "$tag" --yes --cleanup-tag=false 2>/dev/null || true
           gh release create "$tag" "ptx-isa-${version}.tar.gz" \
             --title "PTX ISA $version" \
             --notes "Generated from $(jq -r .source dist/VERSION.json)

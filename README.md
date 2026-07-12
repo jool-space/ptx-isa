@@ -10,7 +10,7 @@ a directory of ~485 markdown files that a person — or an agent — can search:
 ```bash
 grep -rl 'cp.async.bulk.tensor' ptx/
 find ptx -name '9.7.4.3-*'          # cite a section, open the file
-git diff v9.2.0 v9.3.0              # what changed in the ISA itself
+git diff v9.2 v9.3                  # what changed in the ISA itself
 ```
 
 Built for [PTX.jl](https://github.com/jool-space/PTX.jl), useful anywhere PTX is
@@ -21,7 +21,7 @@ written or generated.
 Every ISA version is a tag on the `docs` branch. Clone the one you need:
 
 ```bash
-git clone --branch v9.3.0 --depth 1 https://github.com/jool-space/ptx-isa
+git clone --branch v9.3 --depth 1 https://github.com/jool-space/ptx-isa
 ```
 
 The tree doubles as a [Claude Code](https://claude.com/claude-code) skill —
@@ -29,7 +29,7 @@ The tree doubles as a [Claude Code](https://claude.com/claude-code) skill —
 instructions up instead of recalling them:
 
 ```bash
-git clone --branch v9.3.0 --depth 1 https://github.com/jool-space/ptx-isa ~/.claude/skills/ptx-isa
+git clone --branch v9.3 --depth 1 https://github.com/jool-space/ptx-isa ~/.claude/skills/ptx-isa
 ```
 
 Releases carry the same tree as a tarball if you would rather not clone.
@@ -48,10 +48,20 @@ main                    docs
 └── .github/            └── ptx/            1-introduction/ ... 13-release-notes/
 ```
 
-Tags are `v<major>.<minor>.<build>`: `v9.3.0` is the first build of PTX ISA 9.3,
-`v9.3.1` a rebuild of the same ISA version (NVIDIA revises pages in place). The
-ISA has never used a third version component, so this cannot collide with an
-upstream version.
+There is **one tag per ISA version** — `v9.3`, not `v9.3.0` — and a tag moves if
+a rebuild produces different content, which happens because NVIDIA revises
+published pages in place. The point of a tag here is "the best copy of PTX ISA
+9.3", not "a particular afternoon's scrape". Superseded builds are not lost:
+`docs` is append-only, so every build stays reachable by commit.
+
+The catch, and it is the only one: **git does not update existing tags on fetch.**
+If you already have `v9.3` locally and it has since moved, you need
+
+```bash
+git fetch --tags --force
+```
+
+Fresh clones and release tarballs always get the current build.
 
 ## Building
 
