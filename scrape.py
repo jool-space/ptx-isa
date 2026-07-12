@@ -21,8 +21,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urljoin
@@ -63,10 +65,11 @@ def slugify(title: str, number: str = "") -> str:
 
 
 class PTXScraper:
-    def __init__(self, base_url: str, out_dir: Path, skill_dir: Path):
+    def __init__(self, base_url: str, out_dir: Path, skill_dir: Path, images: bool = True):
         self.base_url = base_url
         self.out_dir = out_dir
         self.skill_dir = skill_dir
+        self.images = images
 
         self.session = requests.Session()
         self.session.headers["User-Agent"] = "ptx-isa/1.0 (+https://github.com/jool-space/ptx-isa)"
@@ -170,6 +173,58 @@ class PTXScraper:
 
         return re.sub(r"\n{4,}", "\n\n\n", "\n\n".join(parts)).strip() + "\n"
 
+    def localize_images(self, files: list[Path], docs_dir: Path) -> None:
+        """Download the spec's diagrams and point the markdown at local copies.
+
+        The figures are load-bearing -- register fragment layouts, swizzling
+        modes -- so a clone has to carry them. Linking to the CDN instead would
+        leave the tree unreadable offline and unusable to anything that cannot
+        follow a URL.
+        """
+        pattern = re.compile(r"https://docs\.nvidia\.com/[^)\s]*/_images/([^)\s]+)")
+        urls: dict[str, str] = {}  # filename -> url
+        for path in files:
+            for match in pattern.finditer(path.read_text(encoding="utf-8")):
+                urls[match.group(1)] = match.group(0)
+
+        if not urls:
+            return
+
+        images_dir = docs_dir / "_images"
+        images_dir.mkdir(exist_ok=True)
+
+        print(f"Downloading {len(urls)} images")
+        failed = []
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            futures = {
+                pool.submit(self.download, url, images_dir / name): name
+                for name, url in urls.items()
+            }
+            for future in as_completed(futures):
+                if not future.result():
+                    failed.append(futures[future])
+        if failed:
+            raise SystemExit(f"Failed to download {len(failed)} images: {failed[:5]}")
+
+        for path in files:
+            text = path.read_text(encoding="utf-8")
+            relative = os.path.relpath(images_dir, path.parent)
+            text = pattern.sub(lambda m: f"{relative}/{m.group(1)}", text)
+            path.write_text(text, encoding="utf-8")
+
+        total = sum(f.stat().st_size for f in images_dir.iterdir())
+        print(f"  {len(urls)} images, {total / 1e6:.1f} MB")
+
+    def download(self, url: str, path: Path) -> bool:
+        try:
+            response = self.session.get(url, timeout=60)
+            response.raise_for_status()
+            path.write_bytes(response.content)
+            return True
+        except Exception as error:
+            print(f"  ! {url}: {error}")
+            return False
+
     def ptx_version(self, sections: list[Section]) -> str:
         """Read the ISA version out of the spec itself (section 1.3)."""
         for section in sections:
@@ -210,6 +265,9 @@ class PTXScraper:
             path = chapter_dir / f"{slugify(section.title, section.number)}.md"
             path.write_text(self.to_markdown(section), encoding="utf-8")
             written.append((section, path))
+
+        if self.images:
+            self.localize_images([path for _, path in written], docs_dir)
 
         print(f"Wrote {len(written)} files to {docs_dir}")
 
@@ -262,12 +320,18 @@ def main() -> None:
     )
     parser.add_argument("--out", type=Path, default=Path("dist"))
     parser.add_argument("--skill", type=Path, default=Path("skill"))
+    parser.add_argument(
+        "--no-images",
+        action="store_true",
+        help="Leave figures pointing at NVIDIA's CDN instead of downloading them.",
+    )
     args = parser.parse_args()
 
     base_url = (
         ARCHIVE_URL.format(version=args.cuda_version) if args.cuda_version else LATEST_URL
     )
-    version = PTXScraper(base_url, args.out, args.skill).run(args.cuda_version)
+    scraper = PTXScraper(base_url, args.out, args.skill, images=not args.no_images)
+    version = scraper.run(args.cuda_version)
     print(f"\nBuilt PTX ISA {version} at {args.out}")
 
 

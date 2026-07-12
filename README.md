@@ -46,7 +46,16 @@ main                    docs
 ├── validate.py         ├── INDEX.md        every section, in order
 ├── skill/              ├── VERSION.json    ISA version + source URL
 └── .github/            └── ptx/            1-introduction/ ... 13-release-notes/
+                            └── _images/    the spec's figures, 247 of them
 ```
+
+Figures are downloaded and committed, not linked to NVIDIA's CDN. They are not
+decoration — the `mma`/`wgmma` register fragment layouts, the TMA swizzling
+modes, and the tensor memory maps exist only as diagrams, and a reference that
+loses them loses the answer to the questions people actually ask it. It costs
+~19 MB per version; git stores one blob per distinct figure, so all four
+versions together pack to ~17 MB. Build with `--no-images` to link the CDN
+instead.
 
 There is **one tag per ISA version** — `v9.3`, not `v9.3.0` — and a tag moves if
 a rebuild produces different content, which happens because NVIDIA revises

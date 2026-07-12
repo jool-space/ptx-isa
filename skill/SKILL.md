@@ -47,6 +47,14 @@ integer, floating point, comparison and selection, logic, movement and
 conversion, texture, surface, control flow, parallel synchronization, warp-level
 matrix multiply (WMMA/WGMMA), and tensor-core Gen5 (`tcgen05`).
 
+## Figures
+
+The spec's diagrams are in `ptx/_images/`, referenced from the sections that use
+them, and they are part of the content rather than decoration: the register
+fragment layouts for `mma`/`wgmma`, the TMA swizzling modes, and the tensor
+memory maps exist *only* as figures. When a section points at one, open it —
+the surrounding prose does not restate what the diagram shows.
+
 ## Reading an instruction section
 
 Each instruction section states, in order: syntax (all operand forms), a

@@ -120,6 +120,29 @@ def validate(root: Path, baseline: Path | None) -> Report:
                 polluted.append(f"{path.relative_to(root)}: {marker!r}")
     report.check(not polluted, "no site navigation or footer text in docs", "\n".join(polluted))
 
+    # Figures carry real content (register fragment layouts, swizzling modes), so
+    # a build whose images did not land is broken even though the text reads fine.
+    remote = [
+        str(path.relative_to(root))
+        for path in files
+        if re.search(r"docs\.nvidia\.com/\S*_images/", path.read_text())
+    ]
+    report.check(not remote, "no figures still pointing at the CDN", "\n".join(remote))
+
+    dangling = []
+    for path in files:
+        for target in re.findall(r"!\[[^\]]*\]\(([^)]+)\)", path.read_text()):
+            if not (path.parent / target).resolve().exists():
+                dangling.append(f"{path.relative_to(root)} -> {target}")
+    report.check(not dangling, "every figure resolves to a file in the tree", "\n".join(dangling))
+
+    images = list((root / "ptx" / "_images").glob("*")) if (root / "ptx" / "_images").exists() else []
+    truncated = [str(i.name) for i in images if i.stat().st_size < 1000]
+    report.check(not truncated, "no truncated or empty image files", "\n".join(truncated))
+    if images:
+        size = sum(i.stat().st_size for i in images)
+        report.note(f"{len(images)} images, {size / 1e6:.1f} MB")
+
     empty = [str(f.relative_to(root)) for f in files if f.stat().st_size < 40]
     if empty:
         report.note(f"{len(empty)} near-empty section files (headings with no body)")
