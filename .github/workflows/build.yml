@@ -89,14 +89,16 @@ jobs:
           tag="${{ steps.publish.outputs.tag }}"
           version=$(jq -r .ptx_isa_version dist/VERSION.json)
           tar -czf "ptx-isa-${version}.tar.gz" -C dist .
+          {
+            echo "Generated from $(jq -r .source dist/VERSION.json)"
+            echo
+            echo "Install as a skill:"
+            echo '```bash'
+            echo "git clone --branch ${tag} --depth 1 https://github.com/${GITHUB_REPOSITORY} ~/.claude/skills/ptx-isa"
+            echo '```'
+          } > notes.md
           # The release is pinned to a tag that may have just moved; replace it.
           gh release delete "$tag" --yes --cleanup-tag=false 2>/dev/null || true
           gh release create "$tag" "ptx-isa-${version}.tar.gz" \
             --title "PTX ISA $version" \
-            --notes "Generated from $(jq -r .source dist/VERSION.json)
-
-Install as a skill:
-\`\`\`bash
-mkdir -p ~/.claude/skills/ptx-isa
-tar -xzf ptx-isa-${version}.tar.gz -C ~/.claude/skills/ptx-isa
-\`\`\`"
+            --notes-file notes.md
