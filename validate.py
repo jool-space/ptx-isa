@@ -28,7 +28,10 @@ CHROME = [
     "NVIDIA-LogoBlack.svg",
 ]
 
-MAX_FILE_BYTES = 100_000
+# Section 9.7.14.5 (mma) is the largest legitimate file at ~100 KB: 44 figures.
+# This guards against a section swallowing its subsections, which produced files
+# of 1.1 MB, so the headroom costs nothing.
+MAX_FILE_BYTES = 200_000
 MAX_SIZE_DRIFT = 0.40
 MIN_FILES = 300
 EXPECTED_CHAPTERS = 13  # 14 is NVIDIA legal notices; scrape.py drops it
@@ -122,21 +125,25 @@ def validate(root: Path, baseline: Path | None) -> Report:
 
     # Figures carry real content (register fragment layouts, swizzling modes), so
     # a build whose images did not land is broken even though the text reads fine.
-    remote = [
-        str(path.relative_to(root))
-        for path in files
-        if re.search(r"docs\.nvidia\.com/\S*_images/", path.read_text())
-    ]
-    report.check(not remote, "no figures still pointing at the CDN", "\n".join(remote))
+    # A figure is `![caption](local/path.png "source URL")`: the target must be a
+    # file in the tree, the title must record where it came from.
+    figure = re.compile(r"!\[[^\]]*\]\(([^)\s]+)(?:\s+\"([^\"]*)\")?\)")
 
-    dangling = []
+    remote, dangling, unsourced = [], [], []
     for path in files:
-        for target in re.findall(r"!\[[^\]]*\]\(([^)]+)\)", path.read_text()):
-            if not (path.parent / target).resolve().exists():
+        for target, source in figure.findall(path.read_text()):
+            if target.startswith(("http://", "https://")):
+                remote.append(f"{path.relative_to(root)} -> {target}")
+            elif not (path.parent / target).resolve().exists():
                 dangling.append(f"{path.relative_to(root)} -> {target}")
-    report.check(not dangling, "every figure resolves to a file in the tree", "\n".join(dangling))
+            elif not source.startswith("https://docs.nvidia.com/"):
+                unsourced.append(f"{path.relative_to(root)} -> {target}")
 
-    images = list((root / "ptx" / "_images").glob("*")) if (root / "ptx" / "_images").exists() else []
+    report.check(not remote, "no figures still pointing at the CDN", "\n".join(remote))
+    report.check(not dangling, "every figure resolves to a file in the tree", "\n".join(dangling))
+    report.check(not unsourced, "every figure records its source URL", "\n".join(unsourced))
+
+    images = list((root / "ptx" / "_images").glob("*.png")) if (root / "ptx" / "_images").exists() else []
     truncated = [str(i.name) for i in images if i.stat().st_size < 1000]
     report.check(not truncated, "no truncated or empty image files", "\n".join(truncated))
     if images:

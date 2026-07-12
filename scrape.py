@@ -207,13 +207,39 @@ class PTXScraper:
             raise SystemExit(f"Failed to download {len(failed)} images: {failed[:5]}")
 
         for path in files:
-            text = path.read_text(encoding="utf-8")
             relative = os.path.relpath(images_dir, path.parent)
-            text = pattern.sub(lambda m: f"{relative}/{m.group(1)}", text)
-            path.write_text(text, encoding="utf-8")
+            path.write_text(self.relink(path.read_text(encoding="utf-8"), relative), encoding="utf-8")
 
-        total = sum(f.stat().st_size for f in images_dir.iterdir())
+        # A relative path is what you want inside a clone and useless outside one,
+        # so keep each figure's canonical URL where a reader who has only the
+        # markdown -- pasted into an issue, read outside a checkout -- can find it.
+        (images_dir / "SOURCES.json").write_text(
+            json.dumps(dict(sorted(urls.items())), indent=2) + "\n", encoding="utf-8"
+        )
+
+        total = sum(f.stat().st_size for f in images_dir.glob("*.png"))
         print(f"  {len(urls)} images, {total / 1e6:.1f} MB")
+
+    @staticmethod
+    def relink(text: str, relative: str) -> str:
+        """Point a figure at its local copy, keeping its origin and caption.
+
+        The local path is what a reader inside a clone wants; the source URL is
+        what a reader who only has this one file wants. Markdown's title slot
+        holds both at the reference itself, rather than a lookup away. The
+        caption sits on the line below the figure, so it becomes the alt text.
+        """
+        figure = re.compile(
+            r"!\[[^\]]*\]\((https://docs\.nvidia\.com/[^)\s]*/_images/([^)\s]+))\)"
+        )
+
+        def replace(match: re.Match[str]) -> str:
+            url, name = match.group(1), match.group(2)
+            caption = re.match(r"\s*\n\s*\n(Figure \d+[^\n]*)", text[match.end() :])
+            alt = caption.group(1).strip().replace('"', "") if caption else name
+            return f'![{alt}]({relative}/{name} "{url}")'
+
+        return figure.sub(replace, text)
 
     def download(self, url: str, path: Path) -> bool:
         try:
