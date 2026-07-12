@@ -1,13 +1,13 @@
 # 13. Release Notes
 
 
-This section describes the history of change in the PTX ISA and implementation. The first section describes ISA and implementation changes in the current release of PTX ISA version 9.0, and the remaining sections provide a record of changes in previous releases of PTX ISA versions back to PTX ISA version 2.0.
+This section describes the history of change in the PTX ISA and implementation. The first section describes ISA and implementation changes in the current release of PTX ISA version 9.1, and the remaining sections provide a record of changes in previous releases of PTX ISA versions back to PTX ISA version 2.0.
 
 
-Table 57 shows the PTX release history.
+Table 59 shows the PTX release history.
 
 
-Table 57 PTX Release History PTX ISA Version | CUDA Release | Supported Targets  
+Table 59 PTX Release History PTX ISA Version | CUDA Release | Supported Targets  
 ---|---|---  
 PTX ISA 1.0 | CUDA 1.0 | `sm_{10,11}`  
 PTX ISA 1.1 | CUDA 1.1 | `sm_{10,11}`  
@@ -53,4 +53,105 @@ CUDA 12.6, driver r560
 PTX ISA 8.6 | CUDA 12.7, driver r565 | `sm_{10,11,12,13}`, `sm_20`, `sm_{30,32,35,37}`, `sm_{50,52,53}`, `sm_{60,61,62}`, `sm_{70,72,75}`, `sm_{80,86,87,89}`, `sm_{90,90a}`, `sm_{100,100a,101,101a}`  
 PTX ISA 8.7 | CUDA 12.8, driver r570 | `sm_{10,11,12,13}`, `sm_20`, `sm_{30,32,35,37}`, `sm_{50,52,53}`, `sm_{60,61,62}`, `sm_{70,72,75}`, `sm_{80,86,87,89}`, `sm_{90,90a}`, `sm_{100,100,101,101a}`, `sm_{120,120a}`  
 PTX ISA 8.8 | CUDA 12.9, driver r575 | `sm_{10,11,12,13}`, `sm_20`, `sm_{30,32,35,37}`, `sm_{50,52,53}`, `sm_{60,61,62}`, `sm_{70,72,75}`, `sm_{80,86,87,89}`, `sm_{90,90a}`, `sm_{100,100f,100a,101,101f,101a,103,103f,103a}`, `sm_{120,120f,120a,121,121f,121a}`  
-PTX ISA 9.0 | CUDA 13.0, driver r580 | `sm_{10,11,12,13}`, `sm_20`, `sm_{30,32,35,37}`, `sm_{50,52,53}`, `sm_{60,61,62}`, `sm_{70,72,75}`, `sm_{80,86,87,88,89}`, `sm_{90,90a}`, `sm_{100,100f,100a,103,103f,103a}`, `sm_{110,110f,110a}`, `sm_{120,120f,120a,121,121f,121a}`
+PTX ISA 9.0 | CUDA 13.0, driver r580 | `sm_{10,11,12,13}`, `sm_20`, `sm_{30,32,35,37}`, `sm_{50,52,53}`, `sm_{60,61,62}`, `sm_{70,72,75}`, `sm_{80,86,87,88,89}`, `sm_{90,90a}`, `sm_{100,100f,100a,103,103f,103a}`, `sm_{110,110f,110a}`, `sm_{120,120f,120a,121,121f,121a}`  
+PTX ISA 9.1 | CUDA 13.1, driver r590 | `sm_{10,11,12,13}`, `sm_20`, `sm_{30,32,35,37}`, `sm_{50,52,53}`, `sm_{60,61,62}`, `sm_{70,72,75}`, `sm_{80,86,87,88,89}`, `sm_{90,90a}`, `sm_{100,100f,100a,103,103f,103a}`, `sm_{110,110f,110a}`, `sm_{120,120f,120a,121,121f,121a}`
+
+
+Table 60 Arch-specific/ Family-specific PTX Features Release History Instruction | Variant | PTX ISA Version | Supported Targets  
+---|---|---|---  
+`tensormap.replace` | Base variant | 8.3 | `sm_90a`  
+8.6 | `sm_100a`, `sm_120a`  
+8.8 | `sm_100f`, `sm_120f`  
+9.0 | `sm_110f`  
+`tensormap.replace.swizzle_atomicity` | 8.6 | `sm_100a`, `sm_120a`  
+8.8 | `sm_100f`, `sm_120f`  
+9.0 | `sm_110f`  
+`.elemtype` for `.field3` with values `13`, `14`, `15` for `new_val` | 8.7 | `sm_100a`, `sm_120a`  
+8.8 | `sm_100f`, `sm_120f`  
+9.0 | `sm_110f`  
+`.swizzle_mode` for `.field3` with value `4` for `new_val` | 8.8 | `sm_103a`  
+`wgmma.mma_async`, `wgmma.mma_async.sp`, `wgmma.fence`, `wgmma.commit_group`, `wgmma.wait_group` | Base variant | 8.0 | `sm_90a`  
+`setmaxnreg` | Base variant | 8.0 | `sm_90a`  
+8.6 | `sm_100a`, `sm_120a`  
+8.8 | `sm_100f`, `sm_120f`  
+9.0 | `sm_110f`  
+`multimem.ld_reduce`, `multimem.st`, `multimem.red` | Types `.e5m2`, `.e4m3`, `.e5m2x2`, `.e4m3x2`, `.e4m3x4`, `.e5m2x4` | 8.6 | `sm_100a`, `sm_120a`, `sm_121a`  
+8.8 | `sm_100f`  
+9.0 | `sm_110f`  
+`.acc::f16` qualifier | 8.6 | `sm_100a`, `sm_120a`, `sm_121a`  
+8.8 | `sm_100f`  
+9.0 | `sm_110f`  
+`cvt` | `cvt` for `.f32` to `.e2m1x2`/ `.e2m3x2`/`.e3m2x2`/`.ue8m0x2` AND `.e2m1x2`/`.e2m3x2`/`.e3m2x2` to `.f16x2` AND `.ue8m0x2` to `.bf16x2` AND `.bf16x2` to `.ue8m0x2` | 8.6 | `sm_100a`, `sm_120a`  
+8.8 | `sm_100f`, `sm_120f`  
+9.0 | `sm_110f`  
+`cvt` with `.rs` rounding mode | 8.7 | `sm_100a`  
+8.8 | `sm_103a`  
+`cvt` with `.s2f6x2` type | 9.1 | `sm_100a`, `sm_103a`, `sm_110a`, `sm_120a`, `sm_121a`  
+`cvt` for `.f16x2` to `.e2m1x2`/ `.e2m3x2`/`.e3m2x2` | 9.1 | `sm_100f`, `sm_110f`, `sm_120f`  
+`cvt` for `.bf16x2` to `.e2m1x2`/ `.e2m3x2`/`.e3m2x2`/`.e4m3x2`/ `.e5m2x2` | 9.1 | `sm_100f`, `sm_110f`, `sm_120f`  
+`cp.async.bulk.tensor` | `.tile::gather4` and `.im2col::w` with `.shared::cluster` as destination state space | 8.6 | `sm_100a`  
+8.8 | `sm_100f`  
+9.0 | `sm_110f`  
+`.tile::scatter4` and `.im2col::w::128` | 8.6 | `sm_100a`  
+8.8 | `sm_100f`  
+9.0 | `sm_110f`  
+`.cta_group` | 8.6 | `sm_100a`  
+8.8 | `sm_100f`  
+9.0 | `sm_110f`  
+`cp.async.bulk.prefetch.tensor` | `.tile::gather4`, `.im2col::w`, `.im2col::w::128` | 8.6 | `sm_100a`  
+8.8 | `sm_100f`  
+9.0 | `sm_110f`  
+`redux.sync` | Type `.f32` and `.abs`, `.NaN` qualifiers | 8.6 | `sm_100a`  
+8.8 | `sm_100f`  
+`clusterlaunchcontrol.try_cancel` | `.multicast::cluster::all` | 8.6 | `sm_100a`, `sm_120a`  
+8.8 | `sm_100f`, `sm_120f`  
+9.0 | `sm_110f`  
+`ldmatrix` | Shapes `.m16n16`, `.m8n16` AND Type `.b8` AND Qualifiers `.src_fmt`, `.dst_fmt` | 8.6 | `sm_100a`, `sm_120a`  
+8.8 | `sm_100f`, `sm_120f`  
+9.0 | `sm_110f`  
+`stmatrix` | Shapes `.m16n8` AND Type `.b8` AND | 8.6 | `sm_100a`, `sm_120a`  
+8.8 | `sm_100f`, `sm_120f`  
+9.0 | `sm_110f`  
+`tcgen05.alloc`, `tcgen05.dealloc`, `tcgen05.relinquish_alloc_permit` | Base variant | 8.6 | `sm_100a`  
+8.8 | `sm_100f`  
+9.0 | `sm_110f`  
+`tcgen05.ld`, `tcgen05.st`, `tcgen05.wait`, `tcgen05.cp`, `tcgen05.fence`, `tcgen05.commit` | Base variant | 8.6 | `sm_100a`  
+8.8 | `sm_100f`  
+9.0 | `sm_110f`  
+`tcgen05.ld.red` | Base variant | 8.8 | `sm_103f`  
+9.0 | `sm_110f`  
+`tcgen05.shift` | Base variant | 8.6 | `sm_100a`  
+8.8 | `sm_103a`  
+9.0 | `sm_110a`  
+`tcgen05.mma` | Base variant | 8.6 | `sm_100a`  
+8.8 | `sm_100f`  
+9.0 | `sm_110f`  
+Kind `.kind::i8` | 8.6 | `sm_100a`  
+9.0 | `sm_110a`  
+Argument `scale-input-d` | 8.6 | `sm_100a`  
+8.8 | `sm_100f`  
+Qualifiers `.scale_vec::1X`, `.scale_vec::2X`, `.scale_vec::4X` | 8.6 | `sm_100a`  
+Qualifiers `.block16`, `.block32` | 8.8 | `sm_100f`, `sm_110f`  
+K shape value `96` | 8.8 | `sm_103a`  
+`tcgen05.mma.sp` | Base variant | 8.6 | `sm_100a`  
+8.8 | `sm_100f`  
+9.0 | `sm_110f`  
+Kind `.kind::i8` | 8.6 | `sm_100a`  
+9.0 | `sm_110a`  
+Kind `.kind::mxf4nvf4` and `.kind::mxf4` | 8.6 | `sm_100a`  
+8.8 | `sm_103a`  
+9.0 | `sm_110a`  
+Argument `scale-input-d` | 8.6 | `sm_100a`  
+8.8 | `sm_100f`  
+Qualifiers `.scale_vec::1X`, `.scale_vec::2X`, `.scale_vec::4X` | 8.6 | `sm_100a`  
+Qualifiers `.block16`, `.block32` | 8.8 | `sm_100f`, `sm_110f`  
+`tcgen05.mma.ws`, `tcgen05.mma.ws.sp` | Base variant | 8.6 | `sm_100a`  
+8.8 | `sm_100f`  
+9.0 | `sm_110f`  
+Kind `.kind::i8` | 8.6 | `sm_100a`  
+9.0 | `sm_110a`  
+`mma` | Types `.e3m2`, `.e2m3`, `.e2m1` AND Qualifiers `.kind`, `.block_scale`, `.scale_vec_size` | 8.7 | `sm_120a`  
+8.8 | `sm_120f`  
+`mma.sp` | Types `.e3m2`, `.e2m3`, `.e2m1` AND Qualifiers `.kind`, `.block_scale`, `.scale_vec_size` | 8.7 | `sm_120a`  
+8.8 | `sm_120f`  
+Kind `.kind::mxf4nvf4` and `.kind::mxf4` | 8.7 | `sm_120a`, `sm_121a`
