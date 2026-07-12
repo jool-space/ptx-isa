@@ -1,11 +1,11 @@
 ---
 name: ptx-isa
-description: "The complete NVIDIA PTX ISA 9.1 specification, split into greppable markdown. Use when writing, reading, or generating PTX: instruction syntax and semantics, operand types, state spaces, special registers, TensorCore operations (WMMA, WGMMA, tcgen05), async copy and TMA, the memory consistency model, and directives. Triggers on PTX, inline PTX, asm volatile, ptxas, cuobjdump -ptx, mma/wgmma/tcgen05, cp.async, mbarrier, .reg/.shared/.global state spaces, sreg, and questions about what a PTX instruction means or which targets support it."
+description: "The complete NVIDIA PTX ISA 9.2 specification, split into greppable markdown. Use when writing, reading, or generating PTX: instruction syntax and semantics, operand types, state spaces, special registers, TensorCore operations (WMMA, WGMMA, tcgen05), async copy and TMA, the memory consistency model, and directives. Triggers on PTX, inline PTX, asm volatile, ptxas, cuobjdump -ptx, mma/wgmma/tcgen05, cp.async, mbarrier, .reg/.shared/.global state spaces, sreg, and questions about what a PTX instruction means or which targets support it."
 ---
 
-# PTX ISA 9.1
+# PTX ISA 9.2
 
-The full specification is in `ptx/`, one file per section, 473 files.
+The full specification is in `ptx/`, one file per section, 472 files.
 Search it; do not read it whole. Every fact about PTX semantics you need is in
 there, and guessing at PTX semantics produces code that assembles and then
 misbehaves.
@@ -81,6 +81,6 @@ grep -rn 'tcgen05' ptx/13-release-notes/
 
 ## Version
 
-This tree is PTX ISA 9.1; `VERSION.json` records the exact source.
+This tree is PTX ISA 9.2; `VERSION.json` records the exact source.
 The spec is versioned independently of CUDA — check `.version` in generated PTX
 against the ISA version documented here before trusting a semantics question.
