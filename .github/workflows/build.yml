@@ -1,0 +1,99 @@
+name: Build
+
+# Click "Run workflow" in the Actions tab to build. The weekly schedule below is
+# commented out: enable it to have new ISA versions picked up automatically.
+on:
+  workflow_dispatch:
+    inputs:
+      cuda_version:
+        description: "CUDA release to build from (blank = current docs)"
+        required: false
+        type: string
+      dry_run:
+        description: "Build and validate only; do not publish"
+        required: false
+        type: boolean
+        default: false
+  # schedule:
+  #   - cron: "0 6 * * 1"  # Mondays, 06:00 UTC
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # publish.sh needs the docs branch and existing tags
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Fetch the published tree as a baseline
+        run: |
+          if git show-ref --verify --quiet refs/remotes/origin/docs; then
+            git worktree add --detach previous origin/docs
+          fi
+
+      - name: Build
+        run: |
+          if [[ -n "${{ inputs.cuda_version }}" ]]; then
+            ./scrape.py --cuda-version "${{ inputs.cuda_version }}" --out dist
+          else
+            ./scrape.py --out dist
+          fi
+
+      - name: Validate
+        run: |
+          if [[ -d previous ]]; then
+            ./validate.py dist --baseline previous
+          else
+            ./validate.py dist
+          fi
+
+      - name: Summarize
+        run: |
+          version=$(jq -r .ptx_isa_version dist/VERSION.json)
+          {
+            echo "### PTX ISA $version"
+            echo
+            echo "- Source: $(jq -r .source dist/VERSION.json)"
+            echo "- Files: $(find dist/ptx -name '*.md' | wc -l)"
+            echo "- Size: $(du -sh dist/ptx | cut -f1)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish
+        if: ${{ !inputs.dry_run }}
+        id: publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git worktree remove --force previous 2>/dev/null || true
+          tag=$(scripts/publish.sh dist | tail -1)
+          if [[ "$tag" == v* ]]; then
+            git push origin docs
+            git push origin "$tag"
+            echo "tag=$tag" >> "$GITHUB_OUTPUT"
+            echo "Published \`$tag\`" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Docs unchanged; nothing published." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Release
+        if: ${{ steps.publish.outputs.tag != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.publish.outputs.tag }}"
+          version=$(jq -r .ptx_isa_version dist/VERSION.json)
+          tar -czf "ptx-isa-${version}.tar.gz" -C dist .
+          gh release create "$tag" "ptx-isa-${version}.tar.gz" \
+            --title "PTX ISA $version" \
+            --notes "Generated from $(jq -r .source dist/VERSION.json)
+
+Install as a skill:
+\`\`\`bash
+mkdir -p ~/.claude/skills/ptx-isa
+tar -xzf ptx-isa-${version}.tar.gz -C ~/.claude/skills/ptx-isa
+\`\`\`"

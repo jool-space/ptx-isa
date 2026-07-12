@@ -1,0 +1,4 @@
+dist/
+previous/
+__pycache__/
+*.tar.gz
