@@ -30,6 +30,9 @@ trap cleanup EXIT
 
 if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
     git worktree add --quiet "$WORKTREE" "$BRANCH"
+elif git show-ref --verify --quiet "refs/remotes/origin/$BRANCH"; then
+    # CI checkouts only create the default branch locally.
+    git worktree add --quiet -b "$BRANCH" "$WORKTREE" "origin/$BRANCH"
 else
     git worktree add --quiet --detach "$WORKTREE"
     git -C "$WORKTREE" checkout --quiet --orphan "$BRANCH"
