@@ -35,6 +35,7 @@ from bs4 import BeautifulSoup, Tag
 
 LATEST_URL = "https://docs.nvidia.com/cuda/parallel-thread-execution/"
 ARCHIVE_URL = "https://docs.nvidia.com/cuda/archive/{version}/parallel-thread-execution/"
+PREVIEW_URL = "https://docs.nvidia.com/cuda/developer-preview/{version}/parallel-thread-execution/"
 
 HEADINGS = ["h1", "h2", "h3", "h4"]
 
@@ -62,6 +63,17 @@ def slugify(title: str, number: str = "") -> str:
     name = name.lower().strip("-.")
     name = name or "section"
     return f"{number}-{name}" if number else name
+
+
+def resolve_base_url(version: str | None) -> str:
+    if not version:
+        return LATEST_URL
+    archive = ARCHIVE_URL.format(version=version)
+    # Developer previews live under a separate path and only move into the
+    # archive at GA; probe so the same version string works before and after.
+    if requests.head(urljoin(archive, "index.html"), timeout=60, allow_redirects=True).ok:
+        return archive
+    return PREVIEW_URL.format(version=version)
 
 
 class PTXScraper:
@@ -341,8 +353,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
         "--cuda-version",
-        help="Build from the docs archived for this CUDA release (e.g. 13.0.0). "
-        "Defaults to the current published spec.",
+        help="Build from the docs for this CUDA release (e.g. 13.0.0), whether "
+        "archived or a developer preview. Defaults to the current published spec.",
     )
     parser.add_argument("--out", type=Path, default=Path("dist"))
     parser.add_argument("--skill", type=Path, default=Path("skill"))
@@ -353,9 +365,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    base_url = (
-        ARCHIVE_URL.format(version=args.cuda_version) if args.cuda_version else LATEST_URL
-    )
+    base_url = resolve_base_url(args.cuda_version)
     scraper = PTXScraper(base_url, args.out, args.skill, images=not args.no_images)
     version = scraper.run(args.cuda_version)
     print(f"\nBuilt PTX ISA {version} at {args.out}")

@@ -88,6 +88,13 @@ jobs:
         run: |
           tag="${{ steps.publish.outputs.tag }}"
           version=$(jq -r .ptx_isa_version dist/VERSION.json)
+          source=$(jq -r .source dist/VERSION.json)
+          # A developer-preview spec can change before GA; the GA rerun
+          # recreates the release, clearing the flag.
+          prerelease=""
+          if [[ "$source" == *developer-preview* ]]; then
+            prerelease="--prerelease"
+          fi
           tar -czf "ptx-isa-${version}.tar.gz" -C dist .
           {
             echo "Generated from $(jq -r .source dist/VERSION.json)"
@@ -101,4 +108,4 @@ jobs:
           gh release delete "$tag" --yes --cleanup-tag=false 2>/dev/null || true
           gh release create "$tag" "ptx-isa-${version}.tar.gz" \
             --title "PTX ISA $version" \
-            --notes-file notes.md
+            --notes-file notes.md $prerelease
