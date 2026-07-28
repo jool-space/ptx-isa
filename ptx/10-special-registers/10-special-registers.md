@@ -62,3 +62,7 @@ The special registers are:
   * `%dynamic_smem_size`
 
   * `%current_graph_exec`
+
+  * `%perctamemoryoffset`
+
+  * `%perctamemorysize`
