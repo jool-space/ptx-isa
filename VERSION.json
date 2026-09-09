@@ -1,5 +1,5 @@
 {
   "ptx_isa_version": "9.4",
-  "cuda_version": "13.4",
-  "source": "https://docs.nvidia.com/cuda/developer-preview/13.4/parallel-thread-execution/index.html"
+  "cuda_version": "latest",
+  "source": "https://docs.nvidia.com/cuda/parallel-thread-execution/index.html"
 }
